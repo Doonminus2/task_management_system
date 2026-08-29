@@ -104,6 +104,8 @@ class TaskManager:
             return True
         print(f"Task {task_id} not found.")
         return False
+    
+print("Finished")
 
 
 if __name__ == "__main__":
