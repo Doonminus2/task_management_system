@@ -19,7 +19,14 @@ class FileTaskStorage(TaskStorage):
             with open(self.filename, "r") as f:
                 for line in f:
                     parts = line.strip().split(",")
-                    if len(parts)  == 4:
+                    if len(parts) == 5:
+                        task_id = int(parts[0])
+                        description = parts[1]
+                        due_date = parts[2]
+                        completed = parts[3] == "True"
+                        priority = parts[4]
+                        loaded_tasks.append(Task(task_id, description, due_date, completed, priority))
+                    elif len(parts) == 4:
                         task_id = int(parts[0])
                         description = parts[1]
                         due_date = parts[2]
@@ -31,17 +38,23 @@ class FileTaskStorage(TaskStorage):
     def save_tasks(self, tasks):
         with open(self.filename, "w") as f:
             for task in tasks:
-                f.write(f"{task.id},{task.description},{task.due_date},{task.completed}\n")
+                f.write(f"{task.id},{task.description},{task.due_date},{task.completed},{task.priority}\n")
             print(f"Tasks saved to {self.filename}")
 
 
 
 class Task:
-    def __init__(self, task_id, description, due_date=None, completed=False):
+    VALID_PRIORITIES = ("low", "medium", "high")
+
+    def __init__(self, task_id, description, due_date=None, completed=False, priority="medium"):
         self.id = task_id
         self.description = description
         self.due_date = due_date
         self.completed = completed
+        if priority.lower() not in self.VALID_PRIORITIES:
+            raise ValueError(f"Priority must be one of {self.VALID_PRIORITIES}, got '{priority}'")
+        self.priority = priority.lower()
+        
         
     def mark_completed(self):
         self.completed = True
@@ -50,7 +63,8 @@ class Task:
     def __str__(self):
         status = "✓" if self.completed else " "
         due = f" (Due: {self.due_date})" if self.due_date else ""
-        return f"[{status}] {self.id}. {self.description}{due}"
+        priority_icon = {"low": "🟢", "medium": "🟡", "high": "🔴"}.get(self.priority, "⚪")
+        return f"[{status}] {self.id}. {self.description}{due} | Priority: {priority_icon} {self.priority}"
 
 class TaskManager:
     def __init__(self, storage: TaskStorage):
@@ -60,8 +74,8 @@ class TaskManager:
         print(f"Loaded {len(self.tasks)} tasks.Next ID: {self.next_id}")
 
 
-    def add_task(self, description, due_date=None):
-        task = Task(self.next_id, description, due_date)
+    def add_task(self, description, due_date=None, priority="medium"):
+        task = Task(self.next_id, description, due_date, priority=priority)
         self.tasks.append(task)
         self.next_id += 1
         print(f"Task '{description}' added.")
@@ -96,8 +110,8 @@ if __name__ == "__main__":
     file_storage = FileTaskStorage("My_tasks.txt")
     manager = TaskManager(file_storage)
     manager.list_tasks()
-    manager.add_task("Review SOLID Principles" , "2026-08-28")
-    manager.add_task("Practice OOP", "2026-08-30")
+    manager.add_task("Review SOLID Principles", "2026-08-28", priority="high")
+    manager.add_task("Practice OOP", "2026-08-30", priority="low")
     manager.list_tasks()
     manager.mark_task_completed(1)
     manager.list_tasks()
