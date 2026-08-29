@@ -1,4 +1,2 @@
-1,Review SOLID Principles,2026-08-28,True,medium
-2,Practice OOP,2026-08-30,False,medium
-3,Review SOLID Principles,2026-08-28,False,high
-4,Practice OOP,2026-08-30,False,low
+1,Review SOLID Principles,2026-08-28,True
+2,Practice OOP,2026-08-30,False
